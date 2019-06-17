@@ -1,0 +1,11 @@
+{
+  "name": "d-maps",
+  "description": "destination.maps API",
+  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "author": {
+    "name": "hubermedia GmbH",
+    "email": "info@hubermedia.de"
+  },
+  "private": true
+}
