@@ -149,6 +149,10 @@ export declare interface ILinePaint extends ILayerPaint {
 export declare interface IMap<MAP> {
     getMap(): MAP;
     createMap(options: IMapOptions): MAP;
+    /**
+     * @since 1.0.1
+     */
+    isLoaded(): boolean;
     getContainer(): HTMLElement;
     setExperience(exp: string): Promise<void>;
     getExperience(): string | undefined;
@@ -159,25 +163,40 @@ export declare interface IMap<MAP> {
      */
     resize(): void;
     addMarker(markerOptions: IMarkerOptions): IMarkerImpl;
+    /**
+     * Adds the default location marker to the map
+     * @since 1.0.1
+     * @param coordinate
+     */
+    addLocationMarker(coordinate: ICoordinate): IMarkerImpl;
     addLayer(layer: ILayer): ILayer;
     addLine(line: ILine): ILine;
     clearLine(line: ILine): void;
     addLineArrows(line: ILine): void;
     getDefaultSearchAPI(): IMetaSearch<IMetaLightResult>;
+    /**
+     * @since 1.0.1
+     */
+    getFullSearchAPI(): IMetaSearch<IMetaResult>;
     loadMetaLayer(metaLayer: IMetaLayer): Promise<IMetaLayer>;
     clearMetaLayer(metaLayer: IMetaLayer): void;
     getMetaLayer(): IMetaLayer | undefined;
     /**
-     * Shows the result of a d.meta request on the map
-     * @param request - d.meta request
+     * Shows d.meta data on the map.
+     * @since 1.0.1 (possible to use IMetaLightResult)
+     * @param requestOrData - d.meta request or d.meta result data
      */
-    showContent(request: IMetaRequest): Promise<IMetaLayer>;
+    showContent(requestOrData: IMetaRequest | IMetaLightResult): Promise<IMetaLayer>;
     fitBounds(coordinates: ICoordinate[]): void;
     fitLayer(layer: ILayer): void;
     showTour(globalId: string): Promise<ILine>;
     clearTour(): void;
     showPopup(popup: IPopup): void;
     createPopup(item: IMetaLightItem | IMetaItem | IWrappedItem): IPopup;
+    /**
+     * @since 1.0.1
+     */
+    hidePopup(): void;
     isFullscreen(): boolean;
     setFullscreen(fullscreen: boolean): void;
     findItem(guid: string): Promise<IWrappedItem>;
@@ -265,6 +284,36 @@ export declare interface IMapOptions extends ICameraOptions {
      * **ID** of the map container *DIV* element
      */
     container: string;
+    /**
+     * id of the inital map style.
+     * If undefined or not found, then the default style will be used.
+     * @since 1.0.1
+     */
+    style?: string;
+    /**
+     * if true, the style changer control will be added to the map.
+     * @default true
+     * @since 1.0.1
+     */
+    styleControl?: boolean;
+    /**
+     * if true, the Geolocate control will be added to the map
+     * @default true
+     * @since 1.0.1
+     */
+    geolocateControl?: boolean;
+    /**
+     * if true, the Fullscreen control will be added to the map
+     * @default true
+     * @since 1.0.1
+     */
+    fullscreenControl?: boolean;
+    /**
+     * If set to false, one finger panning will be disabled and an overlay will be shown.
+     * @default true
+     * @since 1.0.1
+     */
+    oneFingerPan?: boolean;
 }
 
 /**
@@ -281,6 +330,11 @@ export declare interface IMarkerOptions extends IMarkerType {
     lat?: number;
     lng?: number;
     popup?: IPopup;
+    /**
+     * Force using the HTMLElement for the Marker
+     * @since 1.0.1
+     */
+    element?: HTMLElement;
 }
 
 /**
@@ -351,6 +405,25 @@ export declare interface IMetaAttribute extends IMetaLightAttribute {
     value?: (string|null);
 }
 
+/** Properties of a MetaChannel. */
+export declare interface IMetaChannel {
+
+    /** MetaChannel title */
+    title?: (string|null);
+
+    /** MetaChannel description */
+    description?: (string|null);
+
+    /** MetaChannel link */
+    link?: (string|null);
+
+    /** MetaChannel copyright */
+    copyright?: (string|null);
+
+    /** MetaChannel id */
+    id?: (number|null);
+}
+
 /** Properties of a MetaCoordinate. */
 export declare interface IMetaCoordinate extends IMetaLightCoordinate {
 
@@ -372,6 +445,32 @@ export declare interface IMetaDateTimeOffset extends IMetaLightDateTimeOffset {
 
     /** MetaDateTimeOffset offsetMinutes */
     offsetMinutes?: (number|null);
+}
+
+/** Properties of a MetaFacet. */
+export declare interface IMetaFacet extends IMetaLightFacet {
+
+    /** MetaFacet value */
+    value?: (string|null);
+
+    /** MetaFacet count */
+    count?: (number|null);
+
+    /** MetaFacet q */
+    q?: (string|null);
+
+    /** MetaFacet label */
+    label?: (string|null);
+}
+
+/** Properties of a MetaFacetGroup. */
+export declare interface IMetaFacetGroup extends IMetaLightFacetGroup {
+
+    /** MetaFacetGroup facets */
+    facets?: (IMetaFacet[]|null);
+
+    /** MetaFacetGroup field */
+    field?: (string|null);
 }
 
 /**
@@ -1275,6 +1374,31 @@ export declare interface IMetaRequest {
     parameters?: (IMetaParameter[]|null);
 }
 
+/** Properties of a MetaResult. */
+export declare interface IMetaResult extends IMetaLightResult {
+
+    /** MetaResult status */
+    status?: (TMetaStatusType|null);
+
+    /** MetaResult message */
+    message?: (string|null);
+
+    /** MetaResult count */
+    count?: (number|null);
+
+    /** MetaResult overallcount */
+    overallcount?: (number|null);
+
+    /** MetaResult channels */
+    channels?: (IMetaChannel[]|null);
+
+    /** MetaResult facetGroups */
+    facetGroups?: (IMetaFacetGroup[]|null);
+
+    /** MetaResult items */
+    items?: (IMetaItem[]|null);
+}
+
 /**
  * @public
  */
@@ -1432,6 +1556,17 @@ export declare interface IPopup {
     url?: string;
     closeButton?: boolean;
     getHTML: () => string;
+    /** @since 1.0.1 */
+    maxWidth?: string;
+}
+
+/**
+ * @public
+ * @since 1.0.1
+ */
+export declare interface IPopupImpl {
+    isOpen(): boolean;
+    remove(): void;
 }
 
 /** Properties of a PredefinedConfig. */
